@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ title }}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <header>📊 COVID-19 Mobility Insights Dashboard</header>
+
+    <nav>
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('markov') }}">Mobility Trends</a>
+      <a href="{{ url_for('hmm') }}">Behavior Analysis</a>
+      <a href="{{ url_for('queue') }}">Crowd Simulator</a>
+    </nav>
+
+    <div class="container">
+      <h2>{{ title }}</h2>
+      <p><strong>{{ subtitle }}</strong></p>
+
+      {% if summary_text %}
+      <section>
+        <h3>🧠 Summary</h3>
+        <p>{{ summary_text }}</p>
+      </section>
+      {% endif %}
+
+      <section>{{ content | safe }}</section>
+
+      {% if pie_chart_url and line_chart_url %}
+      <section>
+        <h3>📈 Visualizations</h3>
+        <div class="chart-row">
+          <div>
+            <img src="{{ pie_chart_url }}" alt="Steady State Pie Chart" />
+            <p style="text-align: center">Mobility Distribution</p>
+          </div>
+          <div>
+            <img src="{{ line_chart_url }}" alt="Mobility Timeline Chart" />
+            <p style="text-align: center">Daily Mobility Trend</p>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+      <div class="downloads">
+        <h4>⬇️ Download Timeline Data</h4>
+        <a href="{{ url_for('static', filename='plots/timeline.csv') }}" class="btn">📄 Download CSV</a>
+        <a href="{{ url_for('static', filename='plots/timeline_report.pdf') }}" class="btn">🧾 Download PDF Report</a>
+      </div>      
+      <div style="margin-top: 30px">
+        <a href="{{ back_url }}" class="btn">← Try Another</a>
+      </div>
+    </div>
+  </body>
+</html>

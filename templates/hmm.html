@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Behavior Analysis (HMM)</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+    <style>
+      .mobility-selects {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>📊 COVID-19 Mobility Insights Dashboard</header>
+
+    <nav>
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('markov') }}">Mobility Trends</a>
+      <a href="{{ url_for('hmm') }}">Behavior Analysis</a>
+      <a href="{{ url_for('queue') }}">Crowd Simulator</a>
+    </nav>
+
+    <div class="container">
+      <h2>🧠 Hidden Behavior Analysis</h2>
+      <p>
+        Use intuitive controls to adjust policy behavior and mobility patterns
+        for HMM-based analysis.
+      </p>
+
+      <form method="POST" onsubmit="return prepareObservedSequence();">
+        <label for="day_count">Select Number of Observed Days:</label>
+        <select id="day_count" onchange="generateMobilityFields()" required>
+          <option value="" disabled selected>Choose days</option>
+          {% for i in range(1, 11) %}
+          <option value="{{ i }}">{{ i }}</option>
+          {% endfor %}
+        </select>
+
+        <div class="mobility-selects" id="mobility_inputs"></div>
+
+        <!-- Hidden field that stores generated sequence -->
+        <input type="hidden" name="obs_seq" id="obs_seq" />
+
+        <h3>Start Probabilities:</h3>
+        <label>Strict Policy:</label>
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          max="1"
+          name="start_prob[Strict Policy]"
+          value="0.5"
+          required
+        />
+        <label>Moderate Policy:</label>
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          max="1"
+          name="start_prob[Moderate Policy]"
+          value="0.3"
+          required
+        />
+        <label>Normal Mobility:</label>
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          max="1"
+          name="start_prob[Normal Mobility]"
+          value="0.2"
+          required
+        />
+
+        <h3>Transition Probabilities:</h3>
+        <table>
+          <tr>
+            <th>From \ To</th>
+            <th>Strict</th>
+            <th>Moderate</th>
+            <th>Normal</th>
+          </tr>
+          {% for from_state in ['Strict Policy', 'Moderate Policy', 'Normal
+          Mobility'] %}
+          <tr>
+            <td>{{ from_state }}</td>
+            {% for to_state in ['Strict Policy', 'Moderate Policy', 'Normal
+            Mobility'] %}
+            <td>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                name="trans[{{ from_state }}][{{ to_state }}]"
+                value="0.33"
+                required
+              />
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </table>
+
+        <h3>Emission Probabilities:</h3>
+        <table>
+          <tr>
+            <th>Policy \ Observed</th>
+            <th>Low</th>
+            <th>Moderate</th>
+            <th>High</th>
+          </tr>
+          {% for policy in ['Strict Policy', 'Moderate Policy', 'Normal
+          Mobility'] %}
+          <tr>
+            <td>{{ policy }}</td>
+            {% for obs in ['Low Mobility', 'Moderate Mobility', 'High Mobility']
+            %}
+            <td>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                name="emit[{{ policy }}][{{ obs }}]"
+                value="0.33"
+                required
+              />
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </table>
+
+        <button type="submit">🔍 Run Analysis</button>
+      </form>
+
+      {% if forward_prob is not none %}
+      <div class="result-box">
+        <h3>Forward Algorithm:</h3>
+        <p>
+          <strong>Likelihood of observed sequence:</strong> {{ forward_prob }}
+        </p>
+
+        <h3>Most Likely Policy Sequence (Viterbi):</h3>
+        <ul>
+          {% for state in viterbi_path %}
+          <li>{{ state }}</li>
+          {% endfor %}
+        </ul>
+
+        <h3>Steady-State Distribution:</h3>
+        <ul>
+          {% for state, prob in steady_hidden.items() %}
+          <li>{{ state }}: {{ prob }}</li>
+          {% endfor %}
+        </ul>
+        <h3>📊 Visualizations</h3>
+        <div class="chart-row">
+          <div>
+            <img src="{{ steady_chart_url }}" alt="Hidden State Pie Chart" />
+            <p style="text-align: center">Hidden State Distribution</p>
+          </div>
+          <div>
+            <img src="{{ viterbi_chart_url }}" alt="Viterbi Path Chart" />
+            <p style="text-align: center">Most Likely Policy Path</p>
+          </div>
+          <div style="margin-top: 20px;">
+            <a href="{{ url_for('download_hmm_pdf') }}" class="btn" style="margin-right:10px;">📄 Download PDF</a>
+            <a href="{{ url_for('download_hmm_csv') }}" class="btn">🧾 Download CSV</a>
+          </div>          
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      function generateMobilityFields() {
+        const count = parseInt(document.getElementById("day_count").value);
+        const container = document.getElementById("mobility_inputs");
+        container.innerHTML = "";
+        const options = ["High Mobility", "Moderate Mobility", "Low Mobility"];
+
+        for (let i = 0; i < count; i++) {
+          const label = document.createElement("label");
+          label.innerText = `Day ${i + 1} Mobility:`;
+
+          const select = document.createElement("select");
+          select.name = `mobility_day_${i}`;
+          select.className = "mobility-select";
+          select.required = true;
+
+          options.forEach((option) => {
+            const opt = document.createElement("option");
+            opt.value = option;
+            opt.text = option;
+            select.appendChild(opt);
+          });
+
+          container.appendChild(label);
+          container.appendChild(select);
+        }
+      }
+
+      function prepareObservedSequence() {
+        const selects = document.querySelectorAll(".mobility-select");
+        const sequence = Array.from(selects)
+          .map((sel) => sel.value)
+          .join(",");
+        document.getElementById("obs_seq").value = sequence;
+        return true;
+      }
+    </script>
+  </body>
+</html>

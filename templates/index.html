@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>COVID-19 Mobility Insights Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header>
+    📊 COVID-19 Mobility Insights Dashboard
+  </header>
+
+  <nav>
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('markov') }}">Mobility Trends</a>
+    <a href="{{ url_for('hmm') }}">Behavior Analysis</a>
+    <a href="{{ url_for('queue') }}">Crowd Simulator</a>
+  </nav>
+
+  <div class="container">
+    <h2>Welcome!</h2>
+    <p>This dashboard helps you understand how public movement changed during the COVID-19 pandemic using real-world mobility data.</p>
+
+    <section>
+      <h3>🧭 Choose a Module</h3>
+      <ul>
+        <li><strong><a href="{{ url_for('markov') }}">Mobility Trends</a>:</strong> Explore how people transitioned between different levels of mobility using Markov Chains.</li>
+        <li><strong><a href="{{ url_for('hmm') }}">Behavior Analysis</a>:</strong> Reveal hidden behavioral patterns using Hidden Markov Models (HMM).</li>
+        <li><strong><a href="{{ url_for('queue') }}">Crowd Simulator</a>:</strong> Simulate and understand congestion at public places using M/M/1 queuing theory.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>💡 Why This Matters</h3>
+      <p>Insights from mobility patterns can guide policy makers and health officials to prepare better for future emergencies and optimize public services like healthcare, transportation, and essential stores.</p>
+    </section>
+
+    <section>
+      <h3>🌍 Data Source</h3>
+      <p>Based on <a href="https://www.google.com/covid19/mobility/" target="_blank" style="color:#1abc9c;">Google COVID-19 Community Mobility Reports</a>.</p>
+    </section>
+  </div>
+</body>
+</html>

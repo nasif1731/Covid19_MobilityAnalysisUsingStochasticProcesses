@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Crowd Congestion Simulator (M/M/1 Queue)</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <header>📊 COVID-19 Mobility Insights Dashboard</header>
+
+    <nav>
+      <a href="{{ url_for('index') }}">Home</a>
+      <a href="{{ url_for('markov') }}">Mobility Trends</a>
+      <a href="{{ url_for('hmm') }}">Behavior Analysis</a>
+      <a href="{{ url_for('queue') }}">Crowd Simulator</a>
+    </nav>
+
+    <div class="container">
+      <h2>🚶 Crowd Congestion Simulator</h2>
+      <p>
+        Estimate waiting times and system load in public places (e.g., markets,
+        parks) using M/M/1 queue theory.
+      </p>
+
+      <form method="POST">
+        <label for="arrival">Average Arrival Rate (people/min):</label>
+        <input
+          type="number"
+          name="arrival"
+          step="any"
+          required
+          placeholder="e.g., 4.5"
+        />
+
+        <label for="service">Average Service Rate (people/min):</label>
+        <input
+          type="number"
+          name="service"
+          step="any"
+          required
+          placeholder="e.g., 6.0"
+        />
+
+        <button type="submit">🚦 Simulate</button>
+      </form>
+
+      {% if metrics %}
+        <h3>📊 M/M/1 Results</h3>
+        <ul>
+          <li>Utilization (ρ): {{ metrics.utilization }}</li>
+          <li>Avg customers in system (L): {{ metrics.L }}</li>
+          <li>Avg customers in queue (Lq): {{ metrics.Lq }}</li>
+          <li>Avg time in system (W): {{ metrics.W }}</li>
+          <li>Avg waiting time (Wq): {{ metrics.Wq }}</li>
+        </ul>
+
+        {% if summary %}
+          <div class="summary-box">
+            <h4>🧠 Interpretation</h4>
+            <p>{{ summary }}</p>
+          </div>
+        {% endif %} 
+        {% if chart_url %}
+          <h4>📈 Visual Summary</h4>
+          <img src="{{ chart_url }}" alt="MM1 Chart" width="600" />
+        {% endif %} 
+      {% endif %}
+    </div>
+  </body>
+</html>

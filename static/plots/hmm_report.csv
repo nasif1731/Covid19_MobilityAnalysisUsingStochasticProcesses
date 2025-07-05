@@ -1,0 +1,9 @@
+Day,Viterbi State
+1,Strict Policy
+2,Strict Policy
+3,Strict Policy
+
+State,Steady Probability
+Strict Policy,0.002635
+Moderate Policy,0.001311
+Normal Mobility,0.001958
